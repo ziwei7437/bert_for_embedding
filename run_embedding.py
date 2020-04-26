@@ -201,7 +201,7 @@ def main():
     # Hack for MNLI-mismatched
     if task.name == "mnli":
         print("=== Start embedding task for MNLI mis-matched ===")
-        mm_eval_examples = MnliMismatchedProcessor.get_dev_examples(task.data_dir)
+        mm_eval_examples = MnliMismatchedProcessor().get_dev_examples(task.data_dir)
         _, dev_tensor_dataset = runner.run_encoding(None, mm_eval_examples)
         print("=== Saving tensor dataset ===")
         torch.save(dev_tensor_dataset,
