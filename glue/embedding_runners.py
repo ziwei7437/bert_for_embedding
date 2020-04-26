@@ -231,42 +231,44 @@ class EmbeddingTaskRunner:
 
     def run_encoding(self, train_examples, eval_examples, verbose=True):
         if verbose:
-            logger.info("***** Running Training for Classifier *****")
+            logger.info("***** Running Encoding Task *****")
             logger.info("  Num examples = %d", len(train_examples))
             logger.info("  Batch size = %d", self.rparams.train_batch_size)
-            # logger.info("  Num steps = %d", self.rparams.t_total)
-
-        train_dataloader = self.get_train_dataloader_separated(train_examples)
-        eval_dataloader = self.get_eval_dataloader_separated(eval_examples)
 
         self.bert_model.eval()
         train_tensor_list_a, train_tensor_list_b, train_labels_tensor_list = [], [], []
         eval_tensor_list_a, eval_tensor_list_b, eval_labels_tensor_list = [], [], []
+        train_dataset_embeddings, eval_dataset_embeddings = None, None
 
-        print("=== Run encoding for training set ===")
-        for step, batch in enumerate(tqdm(train_dataloader)):
-            self.run_encoding_step(
-                step, batch, train_tensor_list_a, train_tensor_list_b, train_labels_tensor_list)
-        train_embeddings_a = torch.cat(train_tensor_list_a).cpu()
-        train_embeddings_b = torch.cat(train_tensor_list_b).cpu()
-        train_labels = torch.cat(train_labels_tensor_list).cpu()
-        print("shape of train set sentence a: {}".format(train_embeddings_a.shape))
-        print("shape of train set sentence b: {}".format(train_embeddings_b.shape))
-        print("shape of train set labels: {}".format(train_labels.shape))
-        train_dataset_embeddings = TensorDataset(train_embeddings_a, train_embeddings_b, train_labels)
+        if train_examples is not None:
+            print("=== Run encoding for training set ===")
+            train_dataloader = self.get_train_dataloader_separated(train_examples)
+            for step, batch in enumerate(tqdm(train_dataloader)):
+                self.run_encoding_step(
+                    step, batch, train_tensor_list_a, train_tensor_list_b, train_labels_tensor_list)
+            train_embeddings_a = torch.cat(train_tensor_list_a).cpu()
+            train_embeddings_b = torch.cat(train_tensor_list_b).cpu()
+            train_labels = torch.cat(train_labels_tensor_list).cpu()
+            print("shape of train set sentence a: {}".format(train_embeddings_a.shape))
+            print("shape of train set sentence b: {}".format(train_embeddings_b.shape))
+            print("shape of train set labels: {}".format(train_labels.shape))
+            train_dataset_embeddings = TensorDataset(train_embeddings_a, train_embeddings_b, train_labels)
 
-        print("=== Run encoding for dev set ===")
-        for step, batch in enumerate(tqdm(eval_dataloader)):
-            self.run_encoding_step(
-                step, batch, eval_tensor_list_a, eval_tensor_list_b, eval_labels_tensor_list
-            )
-        eval_embeddings_a = torch.cat(eval_tensor_list_a).cpu()
-        eval_embeddings_b = torch.cat(eval_tensor_list_b).cpu()
-        eval_labels = torch.cat(eval_labels_tensor_list).cpu()
-        print("shape of dev set sentence a: {}".format(eval_embeddings_a.shape))
-        print("shape of dev set sentence b: {}".format(eval_embeddings_b.shape))
-        print("shape of dev set labels: {}".format(eval_labels.shape))
-        eval_dataset_embeddings = TensorDataset(eval_embeddings_a, eval_embeddings_b, eval_labels)
+        if eval_examples is not None:
+            eval_dataloader = self.get_eval_dataloader_separated(eval_examples)
+            print("=== Run encoding for dev set ===")
+            for step, batch in enumerate(tqdm(eval_dataloader)):
+                self.run_encoding_step(
+                    step, batch, eval_tensor_list_a, eval_tensor_list_b, eval_labels_tensor_list
+                )
+            eval_embeddings_a = torch.cat(eval_tensor_list_a).cpu()
+            eval_embeddings_b = torch.cat(eval_tensor_list_b).cpu()
+            eval_labels = torch.cat(eval_labels_tensor_list).cpu()
+            print("shape of dev set sentence a: {}".format(eval_embeddings_a.shape))
+            print("shape of dev set sentence b: {}".format(eval_embeddings_b.shape))
+            print("shape of dev set labels: {}".format(eval_labels.shape))
+            eval_dataset_embeddings = TensorDataset(eval_embeddings_a, eval_embeddings_b, eval_labels)
+
         return train_dataset_embeddings, eval_dataset_embeddings
 
     def run_encoding_step(self, step, batch, tensor_list_a, tensor_list_b, label_tensor_list):

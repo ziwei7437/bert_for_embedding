@@ -196,18 +196,17 @@ def main():
                os.path.join(args.output_dir, "train.dataset"))
     torch.save(dev_tensor_dataset,
                os.path.join(args.output_dir, "dev.dataset"))
+    print("=== Saved ===")
 
     # Hack for MNLI-mismatched
     if task.name == "mnli":
         print("=== Start embedding task for MNLI mis-matched ===")
-        mm_train_examples = MnliMismatchedProcessor.get_train_examples(task.data_dir)
         mm_eval_examples = MnliMismatchedProcessor.get_dev_examples(task.data_dir)
-        train_tensor_dataset, dev_tensor_dataset = runner.run_encoding(mm_train_examples, mm_eval_examples)
+        _, dev_tensor_dataset = runner.run_encoding(None, mm_eval_examples)
         print("=== Saving tensor dataset ===")
-        torch.save(train_tensor_dataset,
-                   os.path.join(args.output_dir, "mm_train.dataset"))
         torch.save(dev_tensor_dataset,
                    os.path.join(args.output_dir, "mm_dev.dataset"))
+        print("=== Saved ===")
 
 if __name__ == "__main__":
     main()
