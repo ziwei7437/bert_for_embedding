@@ -232,7 +232,10 @@ class EmbeddingTaskRunner:
     def run_encoding(self, train_examples, eval_examples, verbose=True):
         if verbose:
             logger.info("***** Running Encoding Task *****")
-            logger.info("  Num examples = %d", len(train_examples))
+            if train_examples is not None:
+                logger.info("  Train Num examples = %d", len(train_examples))
+            if eval_examples is not None:
+                logger.info("  Eval Num examples = %d", len(eval_examples))
             logger.info("  Batch size = %d", self.rparams.train_batch_size)
 
         self.bert_model.eval()
