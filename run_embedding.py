@@ -189,24 +189,40 @@ def main():
         rparams=runner_param
     )
 
-    train_tensor_dataset, dev_tensor_dataset = runner.run_encoding(train_examples, eval_examples)
+    if args.do_train and args.do_val:
+        train_tensor_dataset, dev_tensor_dataset = runner.run_encoding(train_examples, eval_examples)
 
-    print("=== Saving tensor dataset ===")
-    torch.save(train_tensor_dataset,
-               os.path.join(args.output_dir, "train.dataset"))
-    torch.save(dev_tensor_dataset,
-               os.path.join(args.output_dir, "dev.dataset"))
-    print("=== Saved ===")
-
-    # Hack for MNLI-mismatched
-    if task.name == "mnli":
-        print("=== Start embedding task for MNLI mis-matched ===")
-        mm_eval_examples = MnliMismatchedProcessor().get_dev_examples(task.data_dir)
-        _, dev_tensor_dataset = runner.run_encoding(None, mm_eval_examples)
         print("=== Saving tensor dataset ===")
+        torch.save(train_tensor_dataset,
+                   os.path.join(args.output_dir, "train.dataset"))
         torch.save(dev_tensor_dataset,
-                   os.path.join(args.output_dir, "mm_dev.dataset"))
+                   os.path.join(args.output_dir, "dev.dataset"))
         print("=== Saved ===")
+
+        # Hack for MNLI-mismatched
+        if task.name == "mnli":
+            print("=== Start embedding task for MNLI mis-matched ===")
+            mm_eval_examples = MnliMismatchedProcessor().get_dev_examples(task.data_dir)
+            _, dev_tensor_dataset = runner.run_encoding(None, mm_eval_examples)
+            print("=== Saving tensor dataset ===")
+            torch.save(dev_tensor_dataset,
+                       os.path.join(args.output_dir, "mm_dev.dataset"))
+            print("=== Saved ===")
+
+    if args.do_test:
+        test_examples = task.get_test_examples()
+        test_dataset = runner.run_test_encoding(test_examples)
+        print("=== saving test embedding dataset ===")
+        torch.save(test_dataset,
+                   os.path.join(args.output_dir, "test.dataset"))
+        if task.name == 'mnli':
+            print("=== saving mnli mismatched dataset ===")
+            mm_test_examples = MnliMismatchedProcessor().get_test_examples(task.data_dir)
+            mm_test_dataset = runner.run_test_encoding(mm_test_examples)
+            print("=== saving mm test embedding dataset ===")
+            torch.save(mm_test_dataset,
+                       os.path.join(args.output_dir, "mm_test.dataset"))
+
 
 if __name__ == "__main__":
     main()

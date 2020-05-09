@@ -284,7 +284,29 @@ class EmbeddingTaskRunner:
                                                  output_all_encoded_layers=False)
             tensor_list_a.append(pooled_output_a)
             tensor_list_b.append(pooled_output_b)
-            label_tensor_list.append(batch.label_ids)
+            if label_tensor_list is not None:
+                label_tensor_list.append(batch.label_ids)
+
+    def run_test_encoding(self, test_examples, verbose=True):
+        if verbose:
+            logger.info("  Test Num examples = %d", len(test_examples))
+            logger.info("  Batch size = %d", self.rparams.train_batch_size)
+
+        self.bert_model.eval()
+        test_tensor_list_a, test_tensor_list_b = [], []
+
+        print("=== Run encoding for test set ===")
+        test_data_loader = self.get_eval_dataloader_separated(test_examples)
+        for step, batch in enumerate(tqdm(test_data_loader)):
+            self.run_encoding_step(
+                step, batch, test_tensor_list_a, test_tensor_list_b, None
+            )
+        test_embeddings_a = torch.cat(test_tensor_list_a).cpu()
+        test_embeddings_b = torch.cat(test_tensor_list_b).cpu()
+        print("shape of test set sentence a: {}".format(test_embeddings_a.shape))
+        print("shape of test set sentence b: {}".format(test_embeddings_b.shape))
+        test_dataset_embeddings = TensorDataset(test_embeddings_a, test_embeddings_b)
+        return test_dataset_embeddings
 
     def get_train_dataloader_separated(self, train_examples, verbose=True):
         train_features = convert_examples_to_features_separated(
