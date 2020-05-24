@@ -194,7 +194,7 @@ class EmbeddingTaskRunner:
         self.rparams = rparams
 
     def run_encoding(self, examples, verbose=True, mode='train'):
-        if mode != 'train' or 'test' or 'eval':
+        if mode != 'train' and mode != 'test' and mode != 'eval':
             raise ValueError("mode must be either of 'train', 'eval', or 'test'.")
         if mode == 'train':
             batch_size = self.rparams.train_batch_size
@@ -228,8 +228,8 @@ class EmbeddingTaskRunner:
         batch = batch.to(self.device)
         self.bert_model.eval()
         with torch.no_grad():
-            _, pooled_output = self.bert_model(batch.input_ids_a,
-                                               batch.segment_ids_a, batch.input_mask_a,
+            _, pooled_output = self.bert_model(batch.input_ids,
+                                               batch.segment_ids, batch.input_mask,
                                                output_all_encoded_layers=False)
 
         tensor_list.append(pooled_output)
