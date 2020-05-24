@@ -212,16 +212,20 @@ class EmbeddingTaskRunner:
         if mode == 'test':
             labels_list = None
 
-        print("=== Run encoding for training set ===")
+        print("=== Run encoding for {} set ===".format(mode))
         dataloader = self.get_dataloader(examples, batch_size)
         for step, batch in enumerate(tqdm(dataloader)):
             self.run_encoding_step(
                 step, batch, tensor_list, labels_list)
         embeddings = torch.cat(tensor_list).cpu()
-        labels = torch.cat(labels_list).cpu()
         print("shape of {} set sentence a: {}".format(mode, embeddings.shape))
-        print("shape of {} set labels: {}".format(mode, labels.shape))
-        dataset = TensorDataset(embeddings, labels)
+
+        if mode != "test":
+            labels = torch.cat(labels_list).cpu()
+            print("shape of {} set labels: {}".format(mode, labels.shape))
+            dataset = TensorDataset(embeddings, labels)
+        else:
+            dataset = TensorDataset(embeddings)
         return dataset
 
     def run_encoding_step(self, step, batch, tensor_list, label_list):
