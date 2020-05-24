@@ -2,7 +2,7 @@ import csv
 import os
 import logging
 
-from .core import InputExample
+from glue.core import InputExample
 
 logger = logging.getLogger(__name__)
 
@@ -592,6 +592,42 @@ class XnliProcessor(DataProcessor):
         return examples
 
 
+class MnliNewProcessor(DataProcessor):
+
+    def get_train_examples(self, data_dir):
+        pass
+
+    def get_dev_examples(self, data_dir):
+        pass
+
+    def get_labels(self):
+        pass
+
+
+class SnliNewProcessor(DataProcessor):
+
+    def get_train_examples(self, data_dir):
+        pass
+
+    def get_dev_examples(self, data_dir):
+        pass
+
+    def get_labels(self):
+        pass
+
+
+class MrpcNewProcessor(DataProcessor):
+
+    def get_train_examples(self, data_dir):
+        pass
+
+    def get_dev_examples(self, data_dir):
+        pass
+
+    def get_labels(self):
+        pass
+
+
 PROCESSORS = {
     "cola": ColaProcessor,
     "sst": SstProcessor,
@@ -648,3 +684,9 @@ def get_task(task_name, data_dir):
     if data_dir is None:
         data_dir = os.path.join(os.environ["GLUE_DIR"], DEFAULT_FOLDER_NAMES[task_name])
     return Task(task_name, task_processor, data_dir)
+
+
+if __name__ == '__main__':
+    task = get_task('snli', data_dir='../../jiant_data/SNLI')
+    train_examples = task.get_train_examples()
+    print(len(train_examples))
